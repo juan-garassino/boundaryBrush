@@ -1,0 +1,46 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # any accidental from_pretrained in tests fails loudly instead of downloading
+  HF_HUB_OFFLINE: "1"
+  TRANSFORMERS_OFFLINE: "1"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - run: uv python install 3.12
+      - name: Lockfile has CPU-only torch
+        run: "! grep -q nvidia uv.lock"
+      - run: uv sync --extra dev
+      - run: uv run ruff check .
+      - run: make test-ci
+
+  smoke-import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - run: uv python install 3.12
+      - run: uv sync --extra dev --extra sam
+      - name: Smoke import — every public module loads cleanly
+        run: |
+          uv run python -c "
+          import boundarybrush, boundarybrush.cli, boundarybrush.config
+          from transformers import SamModel, SamProcessor
+          print('OK')
+          "
