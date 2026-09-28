@@ -76,20 +76,25 @@ def component_at(mask: torch.Tensor, row: int, col: int) -> torch.Tensor:
 
 def resize_rgb(image: np.ndarray, size: int) -> np.ndarray:
     """Squash an RGB uint8 image to size x size (bilinear). The one resize used everywhere."""
-    return np.asarray(Image.fromarray(image).convert("RGB").resize((size, size), Image.BILINEAR))
+    return np.array(Image.fromarray(image).convert("RGB").resize((size, size), Image.BILINEAR))
 
 
 def resize_labels(labels: np.ndarray, size: int) -> np.ndarray:
     """Squash a label map (trimap or mask) to size x size with nearest neighbour."""
-    return np.asarray(Image.fromarray(labels).resize((size, size), Image.NEAREST))
+    return np.array(Image.fromarray(labels).resize((size, size), Image.NEAREST))
+
+
+def normalize(image: torch.Tensor) -> torch.Tensor:
+    """uint8 (..., 3, H, W) -> normalized float32."""
+    x = image.float() / 255.0
+    mean = torch.tensor(IMAGE_MEAN).view(3, 1, 1)
+    std = torch.tensor(IMAGE_STD).view(3, 1, 1)
+    return (x - mean) / std
 
 
 def to_model_input(image: np.ndarray) -> torch.Tensor:
     """uint8 H x W x 3 -> normalized float32 3 x H x W."""
-    x = torch.from_numpy(np.ascontiguousarray(image)).permute(2, 0, 1).float() / 255.0
-    mean = torch.tensor(IMAGE_MEAN).view(3, 1, 1)
-    std = torch.tensor(IMAGE_STD).view(3, 1, 1)
-    return (x - mean) / std
+    return normalize(torch.from_numpy(np.ascontiguousarray(image)).permute(2, 0, 1))
 
 
 def logits_to_mask(logits: torch.Tensor, out_hw: tuple[int, int]) -> np.ndarray:
