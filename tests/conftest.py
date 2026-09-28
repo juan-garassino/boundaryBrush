@@ -10,6 +10,10 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+import torch
+
+# tiny tensors: one thread avoids OpenMP spin-wait overhead on a busy machine
+torch.set_num_threads(1)
 
 
 class _SyntheticPets:
