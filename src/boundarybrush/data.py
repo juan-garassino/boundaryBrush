@@ -178,3 +178,43 @@ class PetsDataset(Dataset):
         image, trimap = self.raw(i)
         target, weight = targets_from_trimap(trimap, self.band_weight)
         return {"image": normalize(image), "target": target, "weight": weight, "trimap": trimap}
+
+
+class PromptedPetsDataset(PetsDataset):
+    """Mini-SAM training items: one image, K prompt sets, each with its own target.
+
+    With probability `paste_prob` a second (augmented) pet is pasted in, and each prompt set
+    picks one of the two pets as its target, so the prompt has to decide what to segment.
+    """
+
+    def __init__(self, *args, prompts_per_image: int = 3, paste_prob: float = 0.5, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.k = prompts_per_image
+        self.paste_prob = paste_prob
+
+    def __getitem__(self, i: int) -> dict[str, torch.Tensor]:
+        from boundarybrush.prompts import sample_prompt
+
+        image, trimap = self.raw(i)
+        trimaps = trimap[None]
+        if len(self.indices) > 1 and float(torch.rand(1, generator=self.gen)) < self.paste_prob:
+            j = int(torch.randint(0, len(self.indices), (1,), generator=self.gen))
+            other_image, other_trimap = self.raw(j)
+            image, trimaps = paste(image, trimap, other_image, other_trimap, self.gen)
+        objects = [t for t in trimaps if (t != BACKGROUND).any()] or [trimaps[0]]
+        coords, types, targets, weights = [], [], [], []
+        for _ in range(self.k):
+            tri = objects[int(torch.randint(0, len(objects), (1,), generator=self.gen))]
+            target, weight = targets_from_trimap(tri, self.band_weight)
+            c, t = sample_prompt(target.bool(), self.gen)
+            coords.append(c)
+            types.append(t)
+            targets.append(target)
+            weights.append(weight)
+        return {
+            "image": normalize(image),
+            "coords": torch.stack(coords),
+            "types": torch.stack(types),
+            "target": torch.stack(targets),
+            "weight": torch.stack(weights),
+        }
