@@ -233,3 +233,12 @@ def test_registry_loads_checkpoint_and_checks_kind(tmp_path):
     assert isinstance(seg, UNetSegmenter)
     with pytest.raises(ValueError):
         get_segmenter("minisam", weights=path, settings=Settings(weights_dir=tmp_path))
+
+
+def test_public_api_is_importable_from_the_package():
+    import boundarybrush
+
+    assert {"Prompt", "MaskResult", "Backend", "Segmenter", "get_segmenter"} <= set(boundarybrush.__all__)
+    seg = boundarybrush.get_segmenter("mock")
+    seg.set_image(IMG)
+    assert seg.predict(boundarybrush.Prompt(points=[(10, 10)], labels=[1])).mask.shape == (64, 96)
