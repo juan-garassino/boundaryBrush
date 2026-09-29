@@ -40,7 +40,7 @@ Coordinates are continuous pixel (x, y); pixel (r, c) is clicked at (c + 0.5, r 
 
 ## Constraints
 
-This machine: 2014 Intel MBP, CPU only — torch 2.2.2, numpy < 2, `BOUNDARYBRUSH_DEVICE=cpu`
+This machine: 2015 Intel MBP (i7-4870HQ), CPU only — torch 2.2.2, numpy < 2, `BOUNDARYBRUSH_DEVICE=cpu`
 (never auto: MPS may claim the Iris Pro). Tests pin torch to one thread (tests/conftest.py).
 Oxford-IIIT Pet images are CC BY-SA 4.0 with owner copyright — credit any image shown.
 Deliberate deviations from the workspace conventions: dataclass config (no pydantic-settings),

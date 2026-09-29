@@ -1,0 +1,16 @@
+{
+  "backend": "minisam",
+  "images": 100,
+  "seconds_per_image": 5.684,
+  "iou_at_clicks": [
+    0.5497,
+    0.6267,
+    0.6597,
+    0.6701,
+    0.6759
+  ],
+  "noc85": 4.85,
+  "iou_box": 0.7209,
+  "boundary_iou_click1": 0.1418,
+  "boundary_iou_box": 0.245
+}

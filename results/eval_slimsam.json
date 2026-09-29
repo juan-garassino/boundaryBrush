@@ -1,0 +1,16 @@
+{
+  "backend": "slimsam",
+  "images": 100,
+  "seconds_per_image": 35.194,
+  "iou_at_clicks": [
+    0.6428,
+    0.6136,
+    0.6877,
+    0.7045,
+    0.7109
+  ],
+  "noc85": 4.44,
+  "iou_box": 0.7013,
+  "boundary_iou_click1": 0.2116,
+  "boundary_iou_box": 0.2511
+}

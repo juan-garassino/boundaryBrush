@@ -1,0 +1,17 @@
+{
+  "backend": "unet",
+  "images": 100,
+  "seconds_per_image": 4.547,
+  "iou_at_clicks": [
+    0.8012,
+    0.6245,
+    0.6245,
+    0.6245,
+    0.6245
+  ],
+  "noc85": 2.76,
+  "iou_box": 0.8314,
+  "boundary_iou_click1": 0.4528,
+  "boundary_iou_box": 0.4728,
+  "iou_automatic": 0.8186
+}
