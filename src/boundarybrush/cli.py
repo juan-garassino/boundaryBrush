@@ -98,7 +98,7 @@ def _cmd_eval(args: argparse.Namespace) -> int:
 
     settings = _settings()
     cache = data.load_cache(data.cache_path(settings.data_dir, "test", settings.image_size))
-    limit = args.limit if args.limit is not None else (500 if args.backend == "slimsam" else None)
+    limit = args.limit if args.limit is not None else (100 if args.backend == "slimsam" else None)
     result = evaluate(
         _segmenter(args, settings),
         cache["images"],
@@ -229,7 +229,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("eval", help="interactive-segmentation metrics on the Pets test split")
     p.add_argument("backend", choices=BACKENDS)
     p.add_argument("--weights", default=None)
-    p.add_argument("--limit", type=int, default=None, help="first N test images (slimsam default 500)")
+    p.add_argument("--limit", type=int, default=None, help="first N test images (slimsam: 100)")
     p.add_argument("--max-clicks", type=int, default=5)
     p.add_argument("--out", default=None, help="JSON path (default results/eval_<backend>.json)")
     p.set_defaults(func=_cmd_eval)
