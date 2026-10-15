@@ -20,8 +20,19 @@ def _str(name: str, default: str):
     return field(default_factory=lambda: _env(name, default))
 
 
+def _positive_int(name: str, default: int) -> int:
+    raw = _env(name, str(default))
+    try:
+        value = int(raw)
+    except ValueError:
+        raise ValueError(f"BOUNDARYBRUSH_{name} must be an integer, got {raw!r}") from None
+    if value <= 0:
+        raise ValueError(f"BOUNDARYBRUSH_{name} must be a positive integer, got {value}")
+    return value
+
+
 def _int(name: str, default: int):
-    return field(default_factory=lambda: int(_env(name, str(default))))
+    return field(default_factory=lambda: _positive_int(name, default))
 
 
 def _path(name: str, default: str):
