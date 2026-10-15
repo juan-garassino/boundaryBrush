@@ -52,7 +52,7 @@ No secrets found (gitleaks history + dir clean). bandit: 0 issues (all severitie
 ## Backlog
 
 - G-007/G-008 (apply manually; the guardian push token cannot modify workflows): in
-  `.github/workflows/ci.yml` add a top-level `permissions:\n  contents: read` block and replace
+  `.github/workflows/ci.yml` add a top-level `permissions: { contents: read }` block and replace
   `actions/checkout@v4` with `actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0` and
   `astral-sh/setup-uv@v3` with `astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3.2.4`
   (SHAs resolved via `git ls-remote` on 2026-10-15).
