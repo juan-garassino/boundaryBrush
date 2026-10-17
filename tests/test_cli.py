@@ -36,3 +36,31 @@ def test_subcommand_without_func_is_a_usage_error_not_attributeerror(monkeypatch
         cli.main(["orphan"])
     assert exc.value.code == 2
     assert "orphan" in capsys.readouterr().err
+
+
+def test_subcommand_dispatches_to_func_and_returns_its_code(monkeypatch):
+    real = cli.build_parser
+    seen = []
+
+    def build_parser_with_cmd():
+        parser = real()
+        sub = _subparser_actions(parser)[0].add_parser("hello")
+        sub.set_defaults(func=lambda args: seen.append(args.cmd) or 7)
+        return parser
+
+    monkeypatch.setattr(cli, "build_parser", build_parser_with_cmd)
+    assert cli.main(["-v", "hello"]) == 7
+    assert seen == ["hello"]
+
+
+def test_python_dash_m_entrypoint(monkeypatch, capsys):
+    import runpy
+    import sys
+
+    from boundarybrush import __version__
+
+    monkeypatch.setattr(sys, "argv", ["boundarybrush", "--version"])
+    with pytest.raises(SystemExit) as exc:
+        runpy.run_module("boundarybrush", run_name="__main__")
+    assert exc.value.code == 0
+    assert __version__ in capsys.readouterr().out

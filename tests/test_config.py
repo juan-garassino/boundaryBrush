@@ -38,13 +38,28 @@ def test_non_positive_int_env_rejected(monkeypatch, value):
         get_settings()
 
 
-@pytest.mark.parametrize("url", ["http://example.com/v1", "file:///etc/passwd", "ftp://x/y"])
+@pytest.mark.parametrize("url", ["http://example.com/v1", "ftp://x/y", "example.com/v1", ""])
 def test_release_url_must_be_https(monkeypatch, url):
     monkeypatch.setenv("BOUNDARYBRUSH_RELEASE_URL", url)
     with pytest.raises(ValueError, match="BOUNDARYBRUSH_RELEASE_URL"):
         get_settings()
 
 
-def test_release_url_https_override_accepted(monkeypatch):
-    monkeypatch.setenv("BOUNDARYBRUSH_RELEASE_URL", "https://example.com/v2")
-    assert get_settings().release_url == "https://example.com/v2"
+@pytest.mark.parametrize("url", ["https://example.com/v2", "HTTPS://example.com/v2", "file:///srv/mirror/v1"])
+def test_release_url_https_or_local_mirror_accepted(monkeypatch, url):
+    # file:// stays allowed for offline mirrors: downloads are SHA-256 verified against the manifest anyway
+    monkeypatch.setenv("BOUNDARYBRUSH_RELEASE_URL", url)
+    assert get_settings().release_url == url
+
+
+@pytest.mark.parametrize("device", ["cpu", "cuda", "cuda:0", "cuda:12", "mps"])
+def test_device_accepted(monkeypatch, device):
+    monkeypatch.setenv("BOUNDARYBRUSH_DEVICE", device)
+    assert get_settings().device == device
+
+
+@pytest.mark.parametrize("device", ["gpu", "auto", "CPU ", "cuda:", "cuda:x", ""])
+def test_device_typo_rejected_at_startup(monkeypatch, device):
+    monkeypatch.setenv("BOUNDARYBRUSH_DEVICE", device)
+    with pytest.raises(ValueError, match="BOUNDARYBRUSH_DEVICE"):
+        get_settings()
