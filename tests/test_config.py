@@ -63,3 +63,12 @@ def test_device_typo_rejected_at_startup(monkeypatch, device):
     monkeypatch.setenv("BOUNDARYBRUSH_DEVICE", device)
     with pytest.raises(ValueError, match="BOUNDARYBRUSH_DEVICE"):
         get_settings()
+
+
+@pytest.mark.parametrize("name", ["DATA_DIR", "RUNS_DIR", "WEIGHTS_DIR"])
+@pytest.mark.parametrize("value", ["", "   "])
+def test_blank_path_env_rejected_instead_of_meaning_cwd(monkeypatch, name, value):
+    # Path("") is ".", so a blank var would silently put data/weights in the current directory
+    monkeypatch.setenv(f"BOUNDARYBRUSH_{name}", value)
+    with pytest.raises(ValueError, match=f"BOUNDARYBRUSH_{name}"):
+        get_settings()

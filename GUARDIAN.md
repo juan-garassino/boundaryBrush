@@ -39,6 +39,7 @@ The current test suite does not import torch.
 | G-010 | low | bug: `cli.main` called `args.func` unconditionally; a subcommand registered without `set_defaults(func=...)` crashed with a bare `AttributeError` | src/boundarybrush/cli.py | fixed (tests `test_subcommand_without_func_is_a_usage_error_not_attributeerror`, `test_every_registered_subcommand_sets_func`, `test_no_subcommand_is_a_usage_error`) | 2026-10-17 |
 | G-011 | low | hardening: `BOUNDARYBRUSH_RELEASE_URL` (checkpoint download base) accepted `http://`, `ftp://`, bare hosts -> tamperable weights once download code lands | src/boundarybrush/config.py | fixed; pass 2 re-allowed `file://` for offline mirrors (feat/v1 SHA-256-verifies every download) (tests `test_release_url_must_be_https`, `test_release_url_https_or_local_mirror_accepted`) | 2026-10-17 |
 | G-012 | low | bug: `BOUNDARYBRUSH_DEVICE` accepted any string (`gpu`, `auto`, trailing spaces); the spec forbids auto and a typo only failed deep inside torch | src/boundarybrush/config.py | fixed (tests `test_device_typo_rejected_at_startup`, `test_device_accepted`) | 2026-10-17 |
+| G-014 | low | bug: a blank `BOUNDARYBRUSH_DATA_DIR` / `RUNS_DIR` / `WEIGHTS_DIR` became `Path("")` == `.`, silently writing data, runs or weights into the current directory | src/boundarybrush/config.py | fixed (test `test_blank_path_env_rejected_instead_of_meaning_cwd`) | 2026-10-17 |
 | G-013 | info | mypy `--strict`: 5 errors (untyped field helpers, `Any` returned from `cli.main`) | src/boundarybrush/config.py, cli.py | fixed (mypy --strict clean) | 2026-10-17 |
 | G-009 | low | bug: `BOUNDARYBRUSH_NUM_THREADS` / `BOUNDARYBRUSH_IMAGE_SIZE` accepted 0 / negatives and a non-integer gave a bare `int()` error not naming the variable | src/boundarybrush/config.py | fixed (tests `test_bad_int_env_names_the_variable`, `test_non_positive_int_env_rejected`) | 2026-10-15 |
 
@@ -49,9 +50,9 @@ No secrets found (gitleaks history + dir clean). bandit: 0 issues (all severitie
 | Metric | Run #1 before | Run #1 after | Run #2 before | Run #2 after |
 |---|---|---|---|---|
 | Open vulns crit/high/med/low | 2 / 7 / 6 / 13 | 2 / 7 / 6 / 13 | 2 / 7 / 6 / 14 (incl. G-011 found this run) | 2 / 7 / 6 / 13 |
-| Open bugs | 1 | 0 | 2 (G-010, G-012 found in pass 2) | 0 |
+| Open bugs | 1 | 0 | 3 (G-010; G-012 found in pass 2; G-014 in pass 3) | 0 |
 | Failing tests | 0 | 0 | 0 | 0 |
-| Test count | 2 | 5 | 5 | 28 (12 after pass 1) |
+| Test count | 2 | 5 | 5 | 34 (12 after pass 1, 28 after pass 2) |
 | Ruff lint errors | 0 | 0 | 0 | 0 |
 | Ruff format diffs | 0 | 0 | 0 | 0 |
 | bandit issues | 0 | 0 | 0 | 0 |
@@ -122,3 +123,7 @@ No secrets found (gitleaks history + dir clean). bandit: 0 issues (all severitie
   keep `file://` mirrors working (feat/v1 compatibility), mypy --strict 5 -> 0 (G-013), added CLI dispatch and
   `python -m` entrypoint tests: tests 12 -> 28, coverage 92% -> 100%. New checks: mypy, coverage, read-only
   risky-pattern review of feat/v1 (notes in Backlog).
+- 2026-10-17 run #2 pass 3 — nothing moved upstream. Fixed G-014 (blank path env vars meant CWD); tests 28 -> 34,
+  coverage stays 100%, mypy --strict clean. main holds only the ~130-line scaffold (config + CLI), now fully
+  covered; nothing further is fixable on this branch until feat/v1 lands — remaining work is owner-side
+  (CI permissions/pins, torch/transformers pins) or feat/v1 review notes in Backlog.

@@ -63,8 +63,15 @@ def _device(name: str, default: str) -> str:
     return field(default_factory=lambda: _checked_device(name, default))
 
 
+def _checked_path(name: str, default: str) -> Path:
+    raw = _env(name, default)
+    if not raw.strip():  # Path("") is "." -> would silently use the current directory
+        raise ValueError(f"BOUNDARYBRUSH_{name} must not be empty")
+    return Path(raw).expanduser()
+
+
 def _path(name: str, default: str) -> Path:
-    return field(default_factory=lambda: Path(_env(name, default)).expanduser())
+    return field(default_factory=lambda: _checked_path(name, default))
 
 
 @dataclass(frozen=True)
