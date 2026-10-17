@@ -17,9 +17,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    func = getattr(args, "func", None)
+    if func is None:  # a subparser registered without set_defaults(func=...)
+        parser.error(f"subcommand {args.cmd!r} has no handler")
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(asctime)s %(name)s %(levelname)s %(message)s",
     )
-    return args.func(args)
+    return func(args)

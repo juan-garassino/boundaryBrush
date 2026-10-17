@@ -35,6 +35,18 @@ def _int(name: str, default: int):
     return field(default_factory=lambda: _positive_int(name, default))
 
 
+def _https_url(name: str, default: str) -> str:
+    # weights are fetched from here; plain http/file/ftp would allow tampering with downloaded checkpoints
+    raw = _env(name, default)
+    if not raw.lower().startswith("https://"):
+        raise ValueError(f"BOUNDARYBRUSH_{name} must be an https:// URL, got {raw!r}")
+    return raw
+
+
+def _url(name: str, default: str):
+    return field(default_factory=lambda: _https_url(name, default))
+
+
 def _path(name: str, default: str):
     return field(default_factory=lambda: Path(_env(name, default)).expanduser())
 
@@ -48,7 +60,7 @@ class Settings:
     num_threads: int = _int("NUM_THREADS", 4)  # BOUNDARYBRUSH_NUM_THREADS=4 (physical cores)
     image_size: int = _int("IMAGE_SIZE", 128)  # BOUNDARYBRUSH_IMAGE_SIZE=128
     sam_model_id: str = _str("SAM_MODEL_ID", "nielsr/slimsam-77-uniform")  # BOUNDARYBRUSH_SAM_MODEL_ID
-    release_url: str = _str("RELEASE_URL", _RELEASE)  # BOUNDARYBRUSH_RELEASE_URL=https://…/v1.0.0
+    release_url: str = _url("RELEASE_URL", _RELEASE)  # BOUNDARYBRUSH_RELEASE_URL=https://…/v1.0.0
 
 
 def get_settings() -> Settings:

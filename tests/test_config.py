@@ -36,3 +36,15 @@ def test_non_positive_int_env_rejected(monkeypatch, value):
     monkeypatch.setenv("BOUNDARYBRUSH_IMAGE_SIZE", value)
     with pytest.raises(ValueError, match="BOUNDARYBRUSH_IMAGE_SIZE"):
         get_settings()
+
+
+@pytest.mark.parametrize("url", ["http://example.com/v1", "file:///etc/passwd", "ftp://x/y"])
+def test_release_url_must_be_https(monkeypatch, url):
+    monkeypatch.setenv("BOUNDARYBRUSH_RELEASE_URL", url)
+    with pytest.raises(ValueError, match="BOUNDARYBRUSH_RELEASE_URL"):
+        get_settings()
+
+
+def test_release_url_https_override_accepted(monkeypatch):
+    monkeypatch.setenv("BOUNDARYBRUSH_RELEASE_URL", "https://example.com/v2")
+    assert get_settings().release_url == "https://example.com/v2"
